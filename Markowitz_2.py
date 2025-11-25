@@ -71,18 +71,8 @@ class MyPortfolio:
         TODO: Complete Task 4 Below
         """
 
-        # for i in range(len(self.returns)):
-        #     R_n = self.returns.copy()[assets].iloc[i]
-        #     R_n[R_n < 0] = 0
-        #     if R_n.argmax() == R_n.argmin():
-        #         self.portfolio_weights.loc[self.returns.index[i], assets] = 0
-        #     else:
-        #         R_n[R_n.argmax()] = 100
-        #         self.portfolio_weights.loc[self.returns.index[i], assets] = R_n / R_n.sum()
-        self.lookback = 252
-        self.gamma = 1
         for i in range(self.lookback + 1, len(self.returns)):
-            R_n = self.returns.copy()[assets].iloc[i - self.lookback : i]
+            R_n = self.returns.copy()[assets].iloc[i - self.lookback: i]
             Sigma = R_n.cov().values
             mu = R_n.mean().values
             n = len(R_n.columns)
@@ -92,22 +82,13 @@ class MyPortfolio:
                 env.setParam("DualReductions", 0)
                 env.start()
                 with gp.Model(env=env, name="portfolio") as model:
-                    """
-                    TODO: Complete Task 3 Below
-                    """
-
-                    # Sample Code: Initialize Decision w and the Objective
-                    # NOTE: You can modify the following code
-                    w = model.addMVar(n, name="w", ub=0.7, lb=0)
+                    w = model.addMVar(n, name="w", ub=1, lb=0)
                     model.addConstr(w.sum() == 1, name="budget")
-                    portfolio_return = mu @ w
+                    # portfolio_return = mu @ w
                     portfolio_risk = w @ Sigma @ w
                     objective_expr = portfolio_risk
                     model.setObjective(objective_expr, gp.GRB.MAXIMIZE)
 
-                    """
-                    TODO: Complete Task 3 Above
-                    """
                     model.optimize()
 
                     # Check if the status is INF_OR_UNBD (code 4)
@@ -130,7 +111,7 @@ class MyPortfolio:
                             # print(f"w {i} = {var.X}")
                             solution.append(var.X)
 
-            self.portfolio_weights.loc[df.index[i], assets] = solution
+            self.portfolio_weights.loc[self.returns.index[i], assets] = solution
         
         """
         TODO: Complete Task 4 Above
