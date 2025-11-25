@@ -63,6 +63,11 @@ class EqualWeightPortfolio:
         TODO: Complete Task 1 Below
         """
 
+        w = 1 / len(assets)
+        for date in df.index:
+            self.portfolio_weights.loc[date] = 0
+            self.portfolio_weights.loc[date, assets] = w
+
         """
         TODO: Complete Task 1 Above
         """
@@ -113,9 +118,13 @@ class RiskParityPortfolio:
         """
         TODO: Complete Task 2 Below
         """
-
-
-
+        self.portfolio_weights[:] = 0
+        rolling_std = df_returns[assets].rolling(window=self.lookback).std()
+        inv_vol = 1.0 / rolling_std
+        sum_inv_vol = inv_vol.sum(axis=1)
+        weights = inv_vol.div(sum_inv_vol, axis=0).fillna(0).shift(1)
+        weights.iloc[self.lookback] = 0
+        self.portfolio_weights[assets] = weights
         """
         TODO: Complete Task 2 Above
         """
